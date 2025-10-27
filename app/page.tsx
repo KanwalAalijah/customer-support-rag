@@ -137,8 +137,8 @@ export default function Home() {
               <div className="flex items-start space-x-2">
                 <span className="text-green-500 text-lg">✓</span>
                 <div>
-                  <p className="font-semibold text-gray-800 dark:text-white">Free Embeddings</p>
-                  <p className="text-gray-500 dark:text-gray-400">Xenova transformers run locally</p>
+                  <p className="font-semibold text-gray-800 dark:text-white">Gemini Embeddings</p>
+                  <p className="text-gray-500 dark:text-gray-400">Google text-embedding-004 (384 dimensions)</p>
                 </div>
               </div>
               <div className="flex items-start space-x-2">

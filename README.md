@@ -4,34 +4,34 @@ A fully functional customer support AI assistant that uses Retrieval Augmented G
 
 ## Features
 
-- Upload PDF and TXT policy documents
+- Upload TXT policy documents
 - Automatic document chunking and embedding generation
-- Semantic search using vector similarity
-- AI-powered question answering
+- Semantic search using Pinecone vector database
+- AI-powered question answering with Google Gemini
 - Source citations for all answers
 - Modern, responsive UI with dark mode support
+- Persistent vector storage (survives server restarts)
 
-## Tech Stack (100% Free!)
+## Tech Stack
 
 ### Frontend
 - **Next.js 16** - React framework
 - **TypeScript** - Type safety
 - **Tailwind CSS** - Styling
 
-### Backend (All Free/Open Source)
-- **@xenova/transformers** - Free embeddings (runs locally, no API needed!)
-- **In-memory Vector Store** - Simple cosine similarity search
-- **pdf-parse** - PDF text extraction
-- **Google Gemini API** (Optional) - For AI-generated responses (generous free tier!)
+### Backend
+- **Google Gemini Embeddings** - text-embedding-004 model (384 dimensions)
+- **Pinecone Vector Database** - Persistent vector storage with free tier
+- **Google Gemini API** - For AI-generated responses (generous free tier!)
 
 ## Architecture
 
 1. **Document Upload Flow**:
-   - User uploads PDF/TXT files
+   - User uploads TXT files
    - Files are parsed and text is extracted
    - Text is chunked into smaller pieces (500 words with 50 word overlap)
-   - Each chunk gets embedded using free Xenova transformers
-   - Embeddings stored in in-memory vector store
+   - Each chunk gets embedded using Google Gemini text-embedding-004
+   - Embeddings stored in Pinecone vector database
 
 2. **Query Flow**:
    - User asks a question
@@ -47,19 +47,29 @@ A fully functional customer support AI assistant that uses Retrieval Augmented G
    npm install
    ```
 
-2. **Optional: Add Google Gemini API Key** (for AI-generated responses):
+2. **Set up environment variables**:
    ```bash
    cp .env.example .env
-   # Edit .env and add your Gemini API key
-   # Get free API key from: https://makersuite.google.com/app/apikey
    ```
 
-3. **Run development server**:
+   Add the following to your `.env` file:
+   - **GEMINI_API_KEY**: Get from https://makersuite.google.com/app/apikey
+   - **PINECONE_API_KEY**: Get from https://www.pinecone.io/
+   - **PINECONE_INDEX_NAME**: Create an index with 384 dimensions and cosine metric
+
+3. **Create Pinecone Index**:
+   - Sign up at https://www.pinecone.io/
+   - Create a new index:
+     - **Name**: customer-support-rag (or your choice)
+     - **Dimensions**: 384
+     - **Metric**: cosine
+
+4. **Run development server**:
    ```bash
    npm run dev
    ```
 
-4. **Open in browser**:
+5. **Open in browser**:
    ```
    http://localhost:3000
    ```
@@ -67,9 +77,9 @@ A fully functional customer support AI assistant that uses Retrieval Augmented G
 ## Usage
 
 1. **Upload Documents**:
-   - Click the upload area or drag & drop PDF/TXT files
+   - Click the upload area or drag & drop TXT files
    - Click "Upload Documents" to process them
-   - Wait for confirmation
+   - Wait for confirmation (embeddings are generated and stored in Pinecone)
 
 2. **Ask Questions**:
    - Type your question in the chat input
@@ -79,15 +89,16 @@ A fully functional customer support AI assistant that uses Retrieval Augmented G
 ## How It Works (RAG Pipeline)
 
 ### Embeddings
-- Uses **Xenova/all-MiniLM-L6-v2** model
-- Completely free, runs in Node.js
-- No external API calls needed
+- Uses **Google Gemini text-embedding-004** model
+- Serverless-compatible (works on Vercel)
 - Generates 384-dimensional vectors
+- Free tier with generous limits
 
 ### Vector Search
+- **Pinecone** vector database for persistent storage
 - Cosine similarity for finding relevant chunks
 - Returns top-k most similar documents
-- Fast in-memory search
+- Fast, scalable vector search
 
 ### Response Generation
 - **With Gemini API Key**: Gemini Pro generates natural answers (free tier: 15 RPM, 1M tokens/day!)
@@ -118,25 +129,29 @@ customer-support-rag/
 
 ## Cost Breakdown
 
-- **Embeddings**: FREE (runs locally)
-- **Vector Store**: FREE (in-memory)
-- **PDF Parsing**: FREE (open-source)
-- **Hosting**: FREE (Vercel free tier)
-- **Gemini API** (Optional): FREE tier includes 15 requests/min, 1M tokens/day!
+- **Gemini Embeddings**: FREE tier (generous limits)
+- **Pinecone Vector Store**: FREE tier (100K vectors, 1 index)
+- **Gemini API**: FREE tier includes 15 requests/min, 1M tokens/day
+- **Hosting**: FREE (Vercel free tier or Pro)
+
+**Total Cost**: $0 for small-scale usage with free tiers!
 
 ## Limitations
 
-- Vector store is in-memory (resets on server restart)
+- TXT files only (PDF support requires additional configuration)
+- Free tier limits:
+  - Pinecone: 100K vectors
+  - Gemini: 15 RPM, 1M tokens/day
 - For production, consider:
-  - Persistent vector DB (Pinecone free tier, Supabase, or Weaviate)
   - Rate limiting
   - Authentication
   - File size limits
+  - Upgrading to paid tiers for higher limits
 
 ## Future Enhancements
 
-- [ ] Persistent vector storage
-- [ ] Support for more file types (DOCX, MD, CSV)
+- [x] Persistent vector storage (✅ Implemented with Pinecone)
+- [ ] Support for more file types (PDF, DOCX, MD, CSV)
 - [ ] Multi-language support
 - [ ] Conversation history
 - [ ] Document management (delete, update)
