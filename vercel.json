@@ -1,8 +1,13 @@
 {
   "functions": {
-    "app/api/**/*.ts": {
+    "app/api/upload/route.ts": {
       "memory": 3008,
       "maxDuration": 60
+    },
+    "app/api/**/*.ts": {
+      "memory": 1024,
+      "maxDuration": 10
     }
-  }
+  },
+  "outputDirectory": ".next"
 }

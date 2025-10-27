@@ -5,8 +5,17 @@ let embeddingModel: any = null;
 
 export async function getEmbeddingModel() {
   if (!embeddingModel) {
-    // Using a lightweight, free embedding model
-    embeddingModel = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+    console.log('Loading Xenova embedding model...');
+    const startTime = Date.now();
+    try {
+      // Using a lightweight, free embedding model
+      embeddingModel = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+      const loadTime = Date.now() - startTime;
+      console.log(`Embedding model loaded successfully in ${loadTime}ms`);
+    } catch (error) {
+      console.error('Failed to load embedding model:', error);
+      throw new Error(`Failed to load embedding model: ${error}`);
+    }
   }
   return embeddingModel;
 }

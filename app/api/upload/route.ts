@@ -3,6 +3,10 @@ import { generateEmbeddings } from '@/lib/embeddings';
 import { vectorStore } from '@/lib/vectorStore';
 import { chunkText, cleanText } from '@/lib/textProcessing';
 
+// Vercel serverless function configuration
+export const maxDuration = 60; // 60 seconds for Pro plan
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
