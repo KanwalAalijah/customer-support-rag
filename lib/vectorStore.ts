@@ -57,7 +57,7 @@ class VectorStore {
         metadata: {
           content: doc.content,
           source: doc.metadata.source,
-          pageNumber: doc.metadata.pageNumber,
+          ...(doc.metadata.pageNumber !== undefined && { pageNumber: doc.metadata.pageNumber }),
           chunkIndex: doc.metadata.chunkIndex,
         },
       },
@@ -77,7 +77,7 @@ class VectorStore {
         metadata: {
           content: doc.content,
           source: doc.metadata.source,
-          pageNumber: doc.metadata.pageNumber,
+          ...(doc.metadata.pageNumber !== undefined && { pageNumber: doc.metadata.pageNumber }),
           chunkIndex: doc.metadata.chunkIndex,
         },
       }));
