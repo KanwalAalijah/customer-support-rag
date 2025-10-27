@@ -1,33 +1,60 @@
-// Free embeddings using Xenova Transformers (runs locally in Node.js)
-import { pipeline } from '@xenova/transformers';
+// Embeddings using Google Gemini API
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-let embeddingModel: any = null;
+let genAI: GoogleGenerativeAI | null = null;
 
-export async function getEmbeddingModel() {
-  if (!embeddingModel) {
-    console.log('Loading Xenova embedding model...');
-    const startTime = Date.now();
-    try {
-      // Using a lightweight, free embedding model
-      embeddingModel = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
-      const loadTime = Date.now() - startTime;
-      console.log(`Embedding model loaded successfully in ${loadTime}ms`);
-    } catch (error) {
-      console.error('Failed to load embedding model:', error);
-      throw new Error(`Failed to load embedding model: ${error}`);
+function getGeminiClient() {
+  if (!genAI) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error('GEMINI_API_KEY is not set. Please add it to your .env file.');
     }
+    genAI = new GoogleGenerativeAI(apiKey);
   }
-  return embeddingModel;
+  return genAI;
 }
 
-export async function generateEmbedding(text: string): Promise<number[]> {
-  const model = await getEmbeddingModel();
-  const output = await model(text, { pooling: 'mean', normalize: true });
-  return Array.from(output.data);
+export async function generateEmbedding(text: string, taskType: 'RETRIEVAL_DOCUMENT' | 'RETRIEVAL_QUERY' = 'RETRIEVAL_DOCUMENT'): Promise<number[]> {
+  const client = getGeminiClient();
+  const model = client.getGenerativeModel({
+    model: 'text-embedding-004',
+  });
+
+  // Use embedContent with just the text string
+  const result = await model.embedContent(text);
+
+  // Check if we need to truncate dimensions to 384
+  const embedding = result.embedding.values;
+  if (embedding.length > 384) {
+    return embedding.slice(0, 384);
+  }
+
+  return embedding;
+}
+
+export async function generateQueryEmbedding(text: string): Promise<number[]> {
+  return generateEmbedding(text, 'RETRIEVAL_QUERY');
 }
 
 export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
-  const embeddings = await Promise.all(texts.map(text => generateEmbedding(text)));
+  console.log(`Generating embeddings for ${texts.length} text chunks using Gemini...`);
+  const startTime = Date.now();
+
+  // Generate embeddings in parallel with rate limiting
+  const batchSize = 10; // Process 10 at a time to avoid rate limits
+  const embeddings: number[][] = [];
+
+  for (let i = 0; i < texts.length; i += batchSize) {
+    const batch = texts.slice(i, i + batchSize);
+    const batchEmbeddings = await Promise.all(
+      batch.map(text => generateEmbedding(text))
+    );
+    embeddings.push(...batchEmbeddings);
+  }
+
+  const duration = Date.now() - startTime;
+  console.log(`Generated ${embeddings.length} embeddings in ${duration}ms`);
+
   return embeddings;
 }
 

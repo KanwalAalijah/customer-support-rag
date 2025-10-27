@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { generateEmbedding } from '@/lib/embeddings';
+import { generateQueryEmbedding } from '@/lib/embeddings';
 import { vectorStore } from '@/lib/vectorStore';
 
 // Initialize Gemini client (use Gemini API key)
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate embedding for the query
-    const queryEmbedding = await generateEmbedding(message);
+    const queryEmbedding = await generateQueryEmbedding(message);
 
     // Find relevant documents
     const relevantDocs = await vectorStore.similaritySearch(queryEmbedding, 3);
